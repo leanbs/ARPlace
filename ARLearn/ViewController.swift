@@ -27,9 +27,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let removeButton = createButton(title: "-")
         removeButton.addTarget(self, action: #selector(removeScene), for: .touchUpInside)
         let rotateLButton = createButton(title: "<")
-        rotateLButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        rotateLButton.addTarget(self, action: #selector(rotateLScene), for: .touchUpInside)
         let rotateRButton = createButton(title: ">")
-        rotateRButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        rotateRButton.addTarget(self, action: #selector(rotateRScene), for: .touchUpInside)
         
         var stackView = UIStackView(arrangedSubviews: [addButton, removeButton, rotateLButton, rotateRButton])
         stackView.frame = CGRect(x: 0, y: 0, width: view.frame.size.width, height: 80)
@@ -122,6 +122,16 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     @objc private func removeScene() {
         selectedNode.removeFromParentNode()
+    }
+    
+    @objc private func rotateLScene() {
+        let rotate = SCNAction.rotateBy(x: 0, y: CGFloat(0.2 * Double.pi), z: 0, duration: 0.1)
+        selectedNode.runAction(rotate)
+    }
+    
+    @objc private func rotateRScene() {
+        let rotate = SCNAction.rotateBy(x: 0, y: CGFloat(-0.2 * Double.pi), z: 0, duration: 0.1)
+        selectedNode.runAction(rotate)
     }
     
     // MARK: - Utilities function
