@@ -25,7 +25,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let addButton = createButton(title: "+")
         addButton.addTarget(self, action: #selector(selectShip), for: .touchUpInside)
         let removeButton = createButton(title: "-")
-        removeButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        removeButton.addTarget(self, action: #selector(removeScene), for: .touchUpInside)
         let rotateLButton = createButton(title: "<")
         rotateLButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
         let rotateRButton = createButton(title: ">")
@@ -118,6 +118,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     @objc private func selectShip() {
         selectedNode = items.addShip()
+    }
+    
+    @objc private func removeScene() {
+        selectedNode.removeFromParentNode()
     }
     
     // MARK: - Utilities function
