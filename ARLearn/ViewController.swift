@@ -49,7 +49,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     func setupSceneView() {
         view.addSubview(sceneView)
-        
+        sceneView.autoenablesDefaultLighting = true
         sceneView.translatesAutoresizingMaskIntoConstraints = false
         sceneView.delegate = self
         
