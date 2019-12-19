@@ -12,8 +12,6 @@ import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     private var sceneView = ARSCNView()
-    private var selectedNode = SCNNode()
-    private var items = ItemList()
     
     private lazy var stackView: UIStackView = {
         let addButton = createButton(title: "+")
