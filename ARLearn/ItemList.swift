@@ -12,12 +12,14 @@ import SceneKit
 class ItemList {
     func addShip() -> SCNNode {
         let node = SCNNode()
-        let scene = SCNScene(named: "art.scnassets/ship.scn")
+        let scene = SCNScene(named: "art.scnassets/cup.scn")
         let nodeArray = scene!.rootNode.childNodes
         
         for childNode in nodeArray {
             node.addChildNode(childNode)
         }
+        
+         node.scale = SCNVector3(0.02, 0.02, 0.02)
         
         return node
     }

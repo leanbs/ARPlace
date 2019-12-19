@@ -12,6 +12,8 @@ import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     private var sceneView = ARSCNView()
+    private var selectedNode = SCNNode()
+    private var items = ItemList()
     
     private lazy var bottomBar: UIView = {
         let bottom = UIView()
@@ -21,7 +23,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         bottom.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         
         let addButton = createButton(title: "+")
-        addButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        addButton.addTarget(self, action: #selector(selectShip), for: .touchUpInside)
         let removeButton = createButton(title: "-")
         removeButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
         let rotateLButton = createButton(title: "<")
@@ -50,6 +52,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         sceneView.translatesAutoresizingMaskIntoConstraints = false
         sceneView.delegate = self
+        
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
         // to show statistics such as fps and timing information
         sceneView.showsStatistics = true
@@ -96,12 +100,24 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let hitResult = self.sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent, .estimatedHorizontalPlane])
         
         if hitResult.count > 0 {
-//            guard let hitTestResult = hitResult.first else {
-//                return
-//            }
+            guard let hitTestResult = hitResult.first else {
+                return
+            }
             
-            print("hit")
+            addItem(hitTestResult: hitTestResult)
         }
+    }
+    
+    private func addItem(hitTestResult: ARHitTestResult) {
+        let itemNode = selectedNode
+        let worldPos = hitTestResult.worldTransform
+        itemNode.position = SCNVector3(worldPos.columns.3.x, worldPos.columns.3.y, worldPos.columns.3.z)
+        
+        sceneView.scene.rootNode.addChildNode(itemNode)
+    }
+    
+    @objc private func selectShip() {
+        selectedNode = items.addShip()
     }
     
     // MARK: - Utilities function
