@@ -15,13 +15,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var selectedNode = SCNNode()
     private var items = ItemList()
     
-    private lazy var bottomBar: UIView = {
-        let bottom = UIView()
-        bottom.backgroundColor = .white
-        bottom.frame = CGRect(x: 0, y: view.frame.size.height - 72, width: view.frame.size.width, height: 72)
-        bottom.bounds.inset(by: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8))
-        bottom.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
-        
+    private lazy var stackView: UIStackView = {
         let addButton = createButton(title: "+")
         addButton.addTarget(self, action: #selector(selectShip), for: .touchUpInside)
         let removeButton = createButton(title: "-")
@@ -32,19 +26,49 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         rotateRButton.addTarget(self, action: #selector(rotateRScene), for: .touchUpInside)
         
         var stackView = UIStackView(arrangedSubviews: [addButton, removeButton, rotateLButton, rotateRButton])
-        stackView.frame = CGRect(x: 0, y: 0, width: view.frame.size.width, height: 80)
+        
         stackView.axis = .horizontal
         stackView.spacing = 16
         stackView.distribution = .fillEqually
+        stackView.backgroundColor = .white
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        bottom.addSubview(stackView)
+        return stackView
+    }()
+    
+    private lazy var bottomBar: UIView = {
+        let bottom = UIView()
+        bottom.backgroundColor = .white
+        bottom.translatesAutoresizingMaskIntoConstraints = false
         
         return bottom
     }()
     
+    private lazy var safeAreaInset: UIEdgeInsets = {
+        if #available(iOS 11.0, *), let windowInset = UIApplication.shared.keyWindow?.safeAreaInsets {
+            return windowInset
+        }
+        return .zero
+    }()
+    
     func setupView() {
+        bottomBar.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.heightAnchor.constraint(equalTo: bottomBar.heightAnchor),
+            stackView.leadingAnchor.constraint(equalTo: bottomBar.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: bottomBar.trailingAnchor),
+        ])
+        
         self.view.addSubview(bottomBar)
+        
+        NSLayoutConstraint.activate([
+            bottomBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            bottomBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
     }
     
     func setupSceneView() {
@@ -58,10 +82,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // to show statistics such as fps and timing information
         sceneView.showsStatistics = true
         
-        sceneView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
-        sceneView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
-        sceneView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
-        sceneView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -80).isActive = true
+        sceneView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        sceneView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        sceneView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        sceneView.bottomAnchor.constraint(equalTo: bottomBar.topAnchor ).isActive = true
     }
     
     override func viewDidLoad() {
@@ -113,7 +137,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let worldPos = hitTestResult.worldTransform
         itemNode.position = SCNVector3(worldPos.columns.3.x, worldPos.columns.3.y, worldPos.columns.3.z)
         
+        animateNode(node: itemNode)
         sceneView.scene.rootNode.addChildNode(itemNode)
+    }
+    
+    private func animateNode(node: SCNNode) {
+        let spin = CABasicAnimation(keyPath: "position")
+        spin.fromValue = SCNVector3(node.worldPosition.x, node.worldPosition.y + 0.1, node.worldPosition.z)
+        spin.toValue = SCNVector3(node.worldPosition.x, node.worldPosition.y, node.worldPosition.z)
+        node.addAnimation(spin, forKey: "position")
     }
     
     @objc private func selectShip() {
@@ -141,7 +173,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         button.setTitle(title, for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.backgroundColor = .white
-        button.frame = CGRect(x: 0, y: 0, width: 80, height: 56)
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.gray.cgColor
         button.layer.cornerRadius = 12
