@@ -12,12 +12,19 @@ import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     private var sceneView = ARSCNView()
+    private var selectedNode = SCNNode()
+    private var items = SceneList()
     
     private lazy var stackView: UIStackView = {
         let addButton = createButton(title: "+")
+        addButton.addTarget(self, action: #selector(selectCup), for: .touchUpInside)
         let removeButton = createButton(title: "-")
+        removeButton.addTarget(self, action: #selector(removeScene), for: .touchUpInside)
         let rotateLButton = createButton(title: "<")
+        rotateLButton.addTarget(self, action: #selector(rotateLScene), for: .touchUpInside)
+        
         let rotateRButton = createButton(title: ">")
+        rotateRButton.addTarget(self, action: #selector(rotateRScene), for: .touchUpInside)
         
         var stackView = UIStackView(arrangedSubviews: [addButton, removeButton, rotateLButton, rotateRButton])
         
@@ -67,11 +74,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     func setupSceneView() {
         view.addSubview(sceneView)
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         sceneView.translatesAutoresizingMaskIntoConstraints = false
         sceneView.delegate = self
                 
         // to show statistics such as fps and timing information
         sceneView.showsStatistics = true
+        
+        sceneView.autoenablesDefaultLighting = true
         
         sceneView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         sceneView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
@@ -83,6 +93,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         super.viewDidLoad()
         setupView()
         setupSceneView()
+        registerGestureRecognizer()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -102,6 +113,48 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
     
+    private func registerGestureRecognizer() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        sceneView.addGestureRecognizer(tap)
+    }
+    
+    @objc private func handleTap(gestureRecognizer: UIGestureRecognizer) {
+        let sceneLocation = gestureRecognizer.view as! ARSCNView
+        let touchLocation = gestureRecognizer.location(in: sceneLocation)
+        
+        let hitResult = self.sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent, .estimatedHorizontalPlane])
+        
+        if hitResult.count > 0 {
+            guard let hitTestResult = hitResult.first else {
+                return
+            }
+            
+            addItem(hitTestResult: hitTestResult)
+        }
+    }
+    
+    private func addItem(hitTestResult: ARHitTestResult) {
+        let itemNode = selectedNode
+        let worldPos = hitTestResult.worldTransform
+        itemNode.position = SCNVector3(worldPos.columns.3.x, worldPos.columns.3.y, worldPos.columns.3.z)
+        animateNode(node: itemNode)
+        sceneView.scene.rootNode.addChildNode(itemNode)
+    }
+    
+    @objc private func removeScene() {
+            selectedNode.removeFromParentNode()
+    }
+    
+    @objc private func rotateLScene() {
+            let rotate = SCNAction.rotateBy(x: 0, y: CGFloat(0.2 * Double.pi), z: 0, duration: 0.1)
+            selectedNode.runAction(rotate)
+        }
+        
+    @objc private func rotateRScene() {
+            let rotate = SCNAction.rotateBy(x: 0, y: CGFloat(-0.2 * Double.pi), z: 0, duration: 0.1)
+            selectedNode.runAction(rotate)
+        }
+    
     // MARK: - Utilities function
     
     private func createButton(title: String) -> UIButton {
@@ -114,6 +167,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         button.layer.cornerRadius = 12
         return button
     }
+    
+    @objc private func selectCup() {
+        selectedNode = items.addCup()
+    }
+    
+    private func animateNode(node: SCNNode) {
+        let spin = CABasicAnimation(keyPath: "position")
+        spin.fromValue = SCNVector3(node.worldPosition.x, node.worldPosition.y + 0.1, node.worldPosition.z)
+        spin.toValue = SCNVector3(node.worldPosition.x, node.worldPosition.y, node.worldPosition.z)
+        node.addAnimation(spin, forKey: "position")
+    }
+    
 
     // MARK: - ARSCNViewDelegate
     
