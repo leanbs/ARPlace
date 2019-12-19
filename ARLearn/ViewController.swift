@@ -11,23 +11,75 @@ import SceneKit
 import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
-
-    @IBOutlet var sceneView: ARSCNView!
+    private var sceneView = ARSCNView()
+    
+    private func createButton(title: String) -> UIButton {
+        let button = UIButton()
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.backgroundColor = .white
+        button.frame = CGRect(x: 0, y: 0, width: 80, height: 56)
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.gray.cgColor
+        button.layer.cornerRadius = 12
+        return button
+    }
+    
+    @objc private func handleTap() {
+        print("hello")
+    }
+    
+    private lazy var bottomBar: UIView = {
+        let bottom = UIView()
+        bottom.backgroundColor = .white
+        bottom.frame = CGRect(x: 0, y: view.frame.size.height - 72, width: view.frame.size.width, height: 72)
+        bottom.bounds.inset(by: UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8))
+        bottom.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        
+        let addButton = createButton(title: "+")
+        addButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        let removeButton = createButton(title: "-")
+        removeButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        let rotateLButton = createButton(title: "<")
+        rotateLButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        let rotateRButton = createButton(title: ">")
+        rotateRButton.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        
+        var stackView = UIStackView(arrangedSubviews: [addButton, removeButton, rotateLButton, rotateRButton])
+        stackView.frame = CGRect(x: 0, y: 0, width: view.frame.size.width, height: 80)
+        stackView.axis = .horizontal
+        stackView.spacing = 16
+        stackView.distribution = .fillEqually
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        bottom.addSubview(stackView)
+        
+        return bottom
+    }()
+    
+    func setupView() {
+        self.view.addSubview(bottomBar)
+    }
+    
+    func setupSceneView() {
+        view.addSubview(sceneView)
+        
+        sceneView.translatesAutoresizingMaskIntoConstraints = false
+        sceneView.delegate = self
+        
+        // to show statistics such as fps and timing information
+        sceneView.showsStatistics = true
+        
+        sceneView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
+        sceneView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
+        sceneView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
+        sceneView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -80).isActive = true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Set the view's delegate
-        sceneView.delegate = self
-        
-        // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
-        
-        // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        
-        // Set the scene to the view
-        sceneView.scene = scene
+        setupView()
+        setupSceneView()        
     }
     
     override func viewWillAppear(_ animated: Bool) {
