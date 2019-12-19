@@ -13,22 +13,6 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
     private var sceneView = ARSCNView()
     
-    private func createButton(title: String) -> UIButton {
-        let button = UIButton()
-        button.setTitle(title, for: .normal)
-        button.setTitleColor(.black, for: .normal)
-        button.backgroundColor = .white
-        button.frame = CGRect(x: 0, y: 0, width: 80, height: 56)
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.gray.cgColor
-        button.layer.cornerRadius = 12
-        return button
-    }
-    
-    @objc private func handleTap() {
-        print("hello")
-    }
-    
     private lazy var bottomBar: UIView = {
         let bottom = UIView()
         bottom.backgroundColor = .white
@@ -97,6 +81,24 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Pause the view's session
         sceneView.session.pause()
+    }
+    
+    @objc private func handleTap() {
+        print("hello")
+    }
+    
+    // MARK: - Utilities function
+    
+    private func createButton(title: String) -> UIButton {
+        let button = UIButton()
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.backgroundColor = .white
+        button.frame = CGRect(x: 0, y: 0, width: 80, height: 56)
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.gray.cgColor
+        button.layer.cornerRadius = 12
+        return button
     }
 
     // MARK: - ARSCNViewDelegate
