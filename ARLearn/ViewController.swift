@@ -63,7 +63,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
-        setupSceneView()        
+        setupSceneView()
+        registerGestureRecognizer()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -83,8 +84,24 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
     
-    @objc private func handleTap() {
-        print("hello")
+    private func registerGestureRecognizer() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        sceneView.addGestureRecognizer(tap)
+    }
+    
+    @objc private func handleTap(gestureRecognizer: UIGestureRecognizer) {
+        let sceneLocation = gestureRecognizer.view as! ARSCNView
+        let touchLocation = gestureRecognizer.location(in: sceneLocation)
+        
+        let hitResult = self.sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent, .estimatedHorizontalPlane])
+        
+        if hitResult.count > 0 {
+//            guard let hitTestResult = hitResult.first else {
+//                return
+//            }
+            
+            print("hit")
+        }
     }
     
     // MARK: - Utilities function
